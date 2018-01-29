@@ -1,0 +1,67 @@
+<html>
+  <head>
+    <title>@title@</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="theme-color" content="#ffffff">
+    <style>
+      * {
+        margin: 3px;
+        padding: 0px;
+      }
+      h1 {
+        font-family: "Arial", Helvetica, sans-serif;
+        font-size: 200%;
+        text-align: center;
+        color: #000;
+      }
+      #canvas {
+        display: block;
+        margin: auto;
+        width: 95%;
+      }
+      .downloadLink {
+        width: 100%;
+        text-align: center;
+      }
+      #downloadButton {
+        font-family: "Arial", Helvetica, sans-serif;
+        text-decoration: underline;
+        cursor: pointer;
+        color: #000;
+      }
+      #downloadButton:hover {
+        color: #00f;
+      }
+    </style>
+    <script type="text/JavaScript">
+      var img = new Image();
+      img.onload = function() {
+        var canvas = document.getElementById("canvas");
+        var context = canvas.getContext("2d");
+        context.drawImage(img, 0, 0);
+        setTimeout(timedRefresh, @interval@);
+      };
+      function timedRefresh() {
+        img.src = "img.jpg?d=" + Date.now();
+      };
+      function download() {
+        var canvas = document.getElementById("canvas");
+        var dt = canvas.toDataURL("image/jpeg");
+        this.href = dt;
+      };
+      function init() {
+        timedRefresh();
+        downloadButton.addEventListener("click", download, false);
+      };
+    </script>
+  </head>
+  <body onload="JavaScript:init();">
+    <div><h1>@title@</h1></div>
+    <div><canvas id="canvas" width="@width@" height="@height@"/></div>
+    <div class="downloadLink"><a id="downloadButton" download="Webcam_frame.jpg">Download image</a></div>
+  </body>
+</html>
