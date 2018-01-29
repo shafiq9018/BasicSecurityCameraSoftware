@@ -1,7 +1,7 @@
 # Basic Security Camera Software
 
-A simple security camera software written in java
-Features:
+A simple security camera software written in java  
+Features:  
 * Connect to a usb webcam or ip camera
 * Stream the video from the server to the client using an encrypted connection
 * Make the video public to any browser
@@ -13,8 +13,8 @@ Features:
 * Make sure you have java 8 installed
 * Download the release folder
 
-To run the client simply double click on the jar file
-To run the server open the terminal and run:
+To run the client simply double click on the jar file  
+To run the server open the terminal and run:  
 ```
 cd path/to/WebcamServer
 java -jar WebcamServer.jar
@@ -24,7 +24,7 @@ java -jar WebcamServer.jar
 
 * Create a text file named "settings.txt" and place in the same folder as "WebcamServer.jar"
 * Write in the file using a text editor what you are typing when running the server from terminal
-Here is an example:
+Here is an example:  
 ```
 usb
 0
@@ -67,8 +67,8 @@ HH.mm.ss dd/MM/yyyy -> 14.59.03 29/01/2018
 
 ## Acknowledgments
 
-[webcam-capture](https://github.com/sarxos/webcam-capture) - Webcam Capture API
-[webcam-capture-driver-native](https://github.com/frankpapenmeier/webcam-capture-driver-native) - Native webcam driver for windows/mac
-[nanohttpd](https://github.com/NanoHttpd/nanohttpd) - A tiny web server in Java
-[kryonet](https://github.com/EsotericSoftware/kryonet) - API for efficient TCP and UDP client/server network communication
-[libjpeg-turbo](https://github.com/libjpeg-turbo/libjpeg-turbo) - Fast JPEG compression and decompression library
+[webcam-capture](https://github.com/sarxos/webcam-capture) - Webcam Capture API  
+[webcam-capture-driver-native](https://github.com/frankpapenmeier/webcam-capture-driver-native) - Native webcam driver for windows/mac  
+[nanohttpd](https://github.com/NanoHttpd/nanohttpd) - A tiny web server in Java  
+[kryonet](https://github.com/EsotericSoftware/kryonet) - API for efficient TCP and UDP client/server network communication  
+[libjpeg-turbo](https://github.com/libjpeg-turbo/libjpeg-turbo) - Fast JPEG compression and decompression library  
