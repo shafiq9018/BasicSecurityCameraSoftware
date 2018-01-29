@@ -21,10 +21,11 @@ import com.esotericsoftware.kryonet.*;
 import com.github.sarxos.webcam.*;
 import com.github.sarxos.webcam.ds.ipcam.*;
 import com.github.sarxos.webcam.ds.nativeapi.*;
+import org.bitlet.weupnp.*;
 import sharedObjects.*;
 
 public class WebcamServer {
-	private static final String version = "1.0";
+	private static final String version = "1.1";
 	public final static Logger logger = new Logger();
 	private static volatile boolean killThread = false;
 	private static volatile Webcam webcam = null;
@@ -37,7 +38,7 @@ public class WebcamServer {
 	private static volatile int httpPort = -1, tcpLivePort = -1, tcpHistoryPort = -1, udpDiscoveryPort = -1;
 	private static volatile File snapshotFolder = null;
 	private static volatile int maxFps = -1, quality = -1, width = -1, height = -1, snapshotInterval = -1, snapshotHistoryDays = -1, timestampPosition = -1, timestampSize = -1, timestampTransparency = 120;
-	private static volatile boolean timestamp = false, timestampColor = false;
+	private static volatile boolean timestamp = false, timestampColor = false, upnpLive = false, upnpHistory = false, upnpHttp = false;
 	private static volatile String wwwTitle = "", timestampFormat = "";
 
 	public static void main(String[] args) {
@@ -151,10 +152,16 @@ public class WebcamServer {
 			timestampColor = readInt("Choose the colors: ", scanner, settingsFile != null, 0, 1) != 0;
 		}
 		tcpLivePort = readInt("TCP live server port (0 to disable): ", scanner, settingsFile != null, 0, 65535);
-		if(tcpLivePort > 0) tcpLivePassword = readString("Password for the connection (optional): ", scanner, settingsFile != null, null, false, 0);
+		if(tcpLivePort > 0) {
+			tcpLivePassword = readString("Password for the connection (optional): ", scanner, settingsFile != null, null, false, 0);
+			upnpLive = readString("Upnp enable for live server (y/n): ", scanner, settingsFile != null, new String[] {"y", "n"}, true, 0).equals("y");
+		}
 		udpDiscoveryPort = readInt("UDP discovery port (0 to disable): ", scanner, settingsFile != null, 0, 65535);
 		httpPort = readInt("HTTP server port (0 to disable): ", scanner, settingsFile != null, 0, 65535);
-		if(httpPort > 0) wwwTitle = readString("Page title: ", scanner, settingsFile != null, null, false, 1);
+		if(httpPort > 0) {
+			wwwTitle = readString("Page title: ", scanner, settingsFile != null, null, false, 1);
+			upnpHttp = readString("Upnp enable for http server (y/n): ", scanner, settingsFile != null, new String[] {"y", "n"}, true, 0).equals("y");
+		}
 		String folder = readString("Snapshot folder (optional): ", scanner, settingsFile != null, null, false, 0);
 		if(folder.length() > 0) {
 			snapshotFolder = new File(folder);
@@ -162,7 +169,10 @@ public class WebcamServer {
 			snapshotInterval = readInt("Snapshot interval ms (" + min + "-300000): ", scanner, settingsFile != null, min, 300000);
 			snapshotHistoryDays = readInt("Snapshot history limit days (0 to disable): ", scanner, settingsFile != null, 0, Integer.MAX_VALUE);
 			tcpHistoryPort = readInt("TCP history server port (0 to disable): ", scanner, settingsFile != null, 0, 65535);
-			if(tcpHistoryPort > 0) tcpHistoryPassword = readString("Password for the connection (optional): ", scanner, settingsFile != null, null, false, 0);
+			if(tcpHistoryPort > 0) {
+				tcpHistoryPassword = readString("Password for the connection (optional): ", scanner, settingsFile != null, null, false, 0);
+				upnpHistory = readString("Upnp enable for history server (y/n): ", scanner, settingsFile != null, new String[] {"y", "n"}, true, 0).equals("y");
+			}
 		}
 
 		scanner.close();
@@ -310,6 +320,39 @@ public class WebcamServer {
 			} catch (Exception e) {
 				logger.logException(e);
 			}
+		}
+		
+		if(upnpLive || upnpHistory || upnpHttp) {
+			logger.logLn("Initializing upnp");
+			
+			new Thread() {
+				public void run() {
+					while(!killThread) {
+						try {
+							GatewayDiscover gatewayDiscover = new GatewayDiscover();
+							Map<InetAddress, GatewayDevice> currentGateways = gatewayDiscover.discover();
+							for (GatewayDevice gw : currentGateways.values()) {
+								if(upnpLive && !gw.getSpecificPortMappingEntry(tcpLivePort, "TCP", new PortMappingEntry())) {
+									if(gw.addPortMapping(tcpLivePort, tcpLivePort, gw.getLocalAddress().getHostAddress(), "TCP", "WebcamServer Live")) logger.logLn("upnp Live mapping created");
+									else logger.logLn("upnp Live mapping creation error");
+								}
+								if(upnpHistory && !gw.getSpecificPortMappingEntry(tcpHistoryPort, "TCP", new PortMappingEntry())) {
+									if(gw.addPortMapping(tcpHistoryPort, tcpHistoryPort, gw.getLocalAddress().getHostAddress(), "TCP", "WebcamServer History")) logger.logLn("upnp History mapping created");
+									else logger.logLn("upnp History mapping creation error");
+								}
+								if(upnpHttp && !gw.getSpecificPortMappingEntry(httpPort, "TCP", new PortMappingEntry())) {
+									if(gw.addPortMapping(httpPort, httpPort, gw.getLocalAddress().getHostAddress(), "TCP", "WebcamServer HTTP")) logger.logLn("upnp HTTP mapping created");
+									else logger.logLn("upnp HTTP mapping creation error");
+								}
+							}
+						} catch (Exception e) {
+							logger.logException(e);
+						}
+						
+						try { Thread.sleep(30000); } catch (InterruptedException e) { }
+					}
+				}
+			}.start();
 		}
 
 		if(snapshotFolder != null) {
