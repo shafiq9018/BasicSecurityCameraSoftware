@@ -25,11 +25,12 @@ import org.bitlet.weupnp.*;
 import sharedObjects.*;
 
 public class WebcamServer {
-	private static final String version = "1.1";
+	private static final String version = "1.2";
 	public final static Logger logger = new Logger();
 	private static volatile boolean killThread = false;
 	private static volatile Webcam webcam = null;
 	private static volatile boolean isIpCamera = false;
+	private static volatile String settingsString = null;
 	private static volatile TJCompressor turboJpegCompressor = null;
 
 	private static volatile Snapshot lastSnapshot = new Snapshot();
@@ -69,13 +70,18 @@ public class WebcamServer {
 				killThread = true;
 			}
 		});
-
+		
 		File settingsFile = new File("settings.txt");
+		settingsString = version + "\n";
 		Scanner scanner = null;
 		try {
 			scanner = new Scanner(settingsFile);
-			logger.logLn("Reading settings from file");
-		} catch (Exception e) {
+			String s = scanner.nextLine();
+			if(s.equals(version)) settingsString = null;
+			else logger.logLn("Settings file is not compatible with WebcamServer " + version);
+		} catch (Exception e) { }
+		if(settingsString == null) logger.logLn("Reading settings from file");
+		else {
 			settingsFile = null;
 			scanner = new Scanner(System.in);
 		}
@@ -174,8 +180,22 @@ public class WebcamServer {
 				upnpHistory = readString("Upnp enable for history server (y/n): ", scanner, settingsFile != null, new String[] {"y", "n"}, true, 0).equals("y");
 			}
 		}
+		
+		if(settingsString != null) {
+			if(readString("Save this configuration? (y/n): ", scanner, settingsFile != null, new String[] {"y", "n"}, true, 0).equals("y")) {
+				try {
+					PrintWriter writer = new PrintWriter(new File("settings.txt"));
+					writer.print(settingsString);
+					writer.close();
+					logger.logLn("Configuration saved");
+				} catch (Exception e) {
+					logger.logException(e);
+				}
+			}
+		}
 
 		scanner.close();
+		settingsString = null;
 
 		if(tcpLivePort > 0) {
 			logger.logLn("Initializing tcp live server");
@@ -988,6 +1008,8 @@ public class WebcamServer {
 			}
 		} while (out < min || out > max || exception);
 		
+		if(settingsString != null) settingsString += out + "\n";
+		
 		System.out.println();
 		
 		return out;
@@ -1007,6 +1029,8 @@ public class WebcamServer {
 				System.exit(0);
 			}
 		} while ((options != null && !Arrays.asList(options).contains(out)) || out.length() < minimunLenght);
+		
+		if(settingsString != null) settingsString += out + "\n";
 		
 		System.out.println();
 		
