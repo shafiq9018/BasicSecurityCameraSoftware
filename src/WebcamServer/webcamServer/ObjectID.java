@@ -1,8 +1,8 @@
 package webcamServer;
 
 public class ObjectID {
-	public volatile int id;
-	public volatile Object object;
+	private volatile int id;
+	private volatile Object object;
 	
 	public ObjectID() {
 		
@@ -11,5 +11,13 @@ public class ObjectID {
 	public ObjectID(int id, Object object) {
 		this.id = id;
 		this.object = object;
+	}
+	
+	public Object getObject() {
+		return object;
+	}
+	
+	public int getID() {
+		return id;
 	}
 }

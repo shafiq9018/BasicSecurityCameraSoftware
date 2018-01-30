@@ -659,8 +659,8 @@ public class WebcamServer {
 									if(sendNetList.isEmpty()) Thread.sleep(0, 100);
 									else {
 										Object obj = sendNetList.remove();
-										int id = ((ObjectID) obj).id;
-										Object object = ((ObjectID) obj).object;
+										int id = ((ObjectID) obj).getID();
+										Object object = ((ObjectID) obj).getObject();
 										
 										if(!historyIdleFlags.containsKey(id)) continue;
 										for(Connection connection : server.getConnections()) {
@@ -773,86 +773,86 @@ public class WebcamServer {
 						if(timestamp) {
 							String nowString = nowDateTime.format(formatter);
 							Rectangle2D rect = fontMetrics.getStringBounds(nowString, graphics);
-					        int stringWidth = (int)Math.round(rect.getWidth());
-					        int stringHeight = (int)Math.round(rect.getHeight());
+							int stringWidth = (int)Math.round(rect.getWidth());
+							int stringHeight = (int)Math.round(rect.getHeight());
 							
 							if(timestampPosition == 0) { //center
 								if(timestampColor) graphics.setColor(new Color(0, 0, 0, timestampTransparency));
 								else graphics.setColor(new Color(255, 255, 255, timestampTransparency));
-						        graphics.fillRect(width / 2 - stringWidth / 2 - fontMetrics.getDescent(), height / 2 - stringHeight / 2, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
-						        if(timestampColor) graphics.setColor(Color.white);
-						        else graphics.setColor(Color.black);
-						        graphics.drawString(nowString, width / 2 - stringWidth / 2, height / 2 - stringHeight / 2 + fontMetrics.getAscent());
+								graphics.fillRect(width / 2 - stringWidth / 2 - fontMetrics.getDescent(), height / 2 - stringHeight / 2, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
+								if(timestampColor) graphics.setColor(Color.white);
+								else graphics.setColor(Color.black);
+								graphics.drawString(nowString, width / 2 - stringWidth / 2, height / 2 - stringHeight / 2 + fontMetrics.getAscent());
 							}
 							else if(timestampPosition == 1) { //top left
 								if(timestampColor) graphics.setColor(new Color(0, 0, 0, timestampTransparency));
 								else graphics.setColor(new Color(255, 255, 255, timestampTransparency));
-						        graphics.fillRect(0, 0, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
-						        if(timestampColor) graphics.setColor(Color.white);
-						        else graphics.setColor(Color.black);
-						        graphics.drawString(nowString, fontMetrics.getDescent(), fontMetrics.getAscent());
+								graphics.fillRect(0, 0, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
+								if(timestampColor) graphics.setColor(Color.white);
+								else graphics.setColor(Color.black);
+								graphics.drawString(nowString, fontMetrics.getDescent(), fontMetrics.getAscent());
 							}
 							else if(timestampPosition == 2) { //top right
 								if(timestampColor) graphics.setColor(new Color(0, 0, 0, timestampTransparency));
 								else graphics.setColor(new Color(255, 255, 255, timestampTransparency));
-						        graphics.fillRect(width - stringWidth - 2 * fontMetrics.getDescent(), 0, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
-						        if(timestampColor) graphics.setColor(Color.white);
-						        else graphics.setColor(Color.black);
-						        graphics.drawString(nowString, width - stringWidth - fontMetrics.getDescent(), fontMetrics.getAscent());
+								graphics.fillRect(width - stringWidth - 2 * fontMetrics.getDescent(), 0, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
+								if(timestampColor) graphics.setColor(Color.white);
+								else graphics.setColor(Color.black);
+								graphics.drawString(nowString, width - stringWidth - fontMetrics.getDescent(), fontMetrics.getAscent());
 							}
 							else if(timestampPosition == 3) { //bottom left
 								if(timestampColor) graphics.setColor(new Color(0, 0, 0, timestampTransparency));
 								else graphics.setColor(new Color(255, 255, 255, timestampTransparency));
-						        graphics.fillRect(0, height - stringHeight, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
-						        if(timestampColor) graphics.setColor(Color.white);
-						        else graphics.setColor(Color.black);
-						        graphics.drawString(nowString, fontMetrics.getDescent(), height - stringHeight + fontMetrics.getAscent());
+								graphics.fillRect(0, height - stringHeight, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
+								if(timestampColor) graphics.setColor(Color.white);
+								else graphics.setColor(Color.black);
+								graphics.drawString(nowString, fontMetrics.getDescent(), height - stringHeight + fontMetrics.getAscent());
 							}
 							else if(timestampPosition == 4) { //bottom right
 								if(timestampColor) graphics.setColor(new Color(0, 0, 0, timestampTransparency));
 								else graphics.setColor(new Color(255, 255, 255, timestampTransparency));
-						        graphics.fillRect(width - stringWidth - 2 * fontMetrics.getDescent(), height - stringHeight, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
-						        if(timestampColor) graphics.setColor(Color.white);
-						        else graphics.setColor(Color.black);
-						        graphics.drawString(nowString, width - stringWidth - fontMetrics.getDescent(), height - stringHeight + fontMetrics.getAscent());
+								graphics.fillRect(width - stringWidth - 2 * fontMetrics.getDescent(), height - stringHeight, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
+								if(timestampColor) graphics.setColor(Color.white);
+								else graphics.setColor(Color.black);
+								graphics.drawString(nowString, width - stringWidth - fontMetrics.getDescent(), height - stringHeight + fontMetrics.getAscent());
 							}
 						}
 						
 						if(errorCounter > maxFps * (isIpCamera ? 5 : 1) + 2) {
 							String string = "WEBCAM ERROR";
 							Rectangle2D rect = fontMetrics.getStringBounds(string, graphics);
-					        int stringWidth = (int)Math.round(rect.getWidth());
-					        int stringHeight = (int)Math.round(rect.getHeight());
+							int stringWidth = (int)Math.round(rect.getWidth());
+							int stringHeight = (int)Math.round(rect.getHeight());
 							
 							if(timestampPosition == 0 || !timestamp) {
 								graphics.setColor(Color.yellow);
-						        graphics.fillRect(width / 2 - stringWidth / 2 - fontMetrics.getDescent(), height / 2 - stringHeight / 2 + stringHeight, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
-						        graphics.setColor(Color.red);
-						        graphics.drawString(string, width / 2 - stringWidth / 2, height / 2 - stringHeight / 2 + stringHeight + fontMetrics.getAscent());
+								graphics.fillRect(width / 2 - stringWidth / 2 - fontMetrics.getDescent(), height / 2 - stringHeight / 2 + stringHeight, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
+								graphics.setColor(Color.red);
+								graphics.drawString(string, width / 2 - stringWidth / 2, height / 2 - stringHeight / 2 + stringHeight + fontMetrics.getAscent());
 							}
 							else if(timestampPosition == 1) {
 								graphics.setColor(Color.yellow);
-						        graphics.fillRect(0, stringHeight, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
-						        graphics.setColor(Color.red);
-						        graphics.drawString(string, fontMetrics.getDescent(), stringHeight + fontMetrics.getAscent());
+								graphics.fillRect(0, stringHeight, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
+								graphics.setColor(Color.red);
+								graphics.drawString(string, fontMetrics.getDescent(), stringHeight + fontMetrics.getAscent());
 							}
 							else if(timestampPosition == 2) {
 								graphics.setColor(Color.yellow);
-						        graphics.fillRect(width - stringWidth - 2 * fontMetrics.getDescent(), stringHeight, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
-						        graphics.setColor(Color.red);
-						        graphics.drawString(string, width - stringWidth - fontMetrics.getDescent(), stringHeight + fontMetrics.getAscent());
+								graphics.fillRect(width - stringWidth - 2 * fontMetrics.getDescent(), stringHeight, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
+								graphics.setColor(Color.red);
+								graphics.drawString(string, width - stringWidth - fontMetrics.getDescent(), stringHeight + fontMetrics.getAscent());
 							}
 							else if(timestampPosition == 3) {
 								graphics.setColor(Color.yellow);
-						        graphics.fillRect(0, height - stringHeight - stringHeight, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
-						        graphics.setColor(Color.red);
-						        graphics.drawString(string, fontMetrics.getDescent(), height - stringHeight - stringHeight + fontMetrics.getAscent());
+								graphics.fillRect(0, height - stringHeight - stringHeight, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
+								graphics.setColor(Color.red);
+								graphics.drawString(string, fontMetrics.getDescent(), height - stringHeight - stringHeight + fontMetrics.getAscent());
 							}
 							else if(timestampPosition == 4) {
 								graphics.setColor(Color.yellow);
-						        graphics.fillRect(width - stringWidth - 2 * fontMetrics.getDescent(), height - stringHeight - stringHeight, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
-						        graphics.setColor(Color.red);
-						        graphics.drawString(string, width - stringWidth - fontMetrics.getDescent(), height - stringHeight - stringHeight + fontMetrics.getAscent());
+								graphics.fillRect(width - stringWidth - 2 * fontMetrics.getDescent(), height - stringHeight - stringHeight, stringWidth + 2 * fontMetrics.getDescent(), stringHeight);
+								graphics.setColor(Color.red);
+								graphics.drawString(string, width - stringWidth - fontMetrics.getDescent(), height - stringHeight - stringHeight + fontMetrics.getAscent());
 							}
 						}
 

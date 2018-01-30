@@ -1,7 +1,7 @@
 package sharedObjects;
 
 public class BooleanWrapper {
-	private boolean b = false;
+	private volatile boolean b = false;
 
 	public BooleanWrapper() {
 		

@@ -207,56 +207,56 @@ public class HistoryViewFrame extends JFrame {
 		
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
 		gl_contentPane.setHorizontalGroup(
-			gl_contentPane.createParallelGroup(Alignment.LEADING)
+				gl_contentPane.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_contentPane.createSequentialGroup()
-					.addComponent(listPanel, 300, 300, 300)
-					.addComponent(viewPanel))
-		);
+						.addComponent(listPanel, 300, 300, 300)
+						.addComponent(viewPanel))
+				);
 		gl_contentPane.setVerticalGroup(
-			gl_contentPane.createParallelGroup(Alignment.LEADING)
+				gl_contentPane.createParallelGroup(Alignment.LEADING)
 				.addGroup(Alignment.TRAILING, gl_contentPane.createSequentialGroup()
-					.addGroup(gl_contentPane.createParallelGroup(Alignment.TRAILING)
-						.addComponent(viewPanel)
-						.addComponent(listPanel)))
-		);
+						.addGroup(gl_contentPane.createParallelGroup(Alignment.TRAILING)
+								.addComponent(viewPanel)
+								.addComponent(listPanel)))
+				);
 		
 		GroupLayout gl_viewPanel = new GroupLayout(viewPanel);
 		gl_viewPanel.setHorizontalGroup(
-			gl_viewPanel.createParallelGroup(Alignment.LEADING)
+				gl_viewPanel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_viewPanel.createSequentialGroup()
-					.addContainerGap()
-					.addComponent(buttonControlPanel))
+						.addContainerGap()
+						.addComponent(buttonControlPanel))
 				.addGroup(gl_viewPanel.createSequentialGroup()
-					.addContainerGap()
-					.addComponent(imagePanel))
-		);
+						.addContainerGap()
+						.addComponent(imagePanel))
+				);
 		gl_viewPanel.setVerticalGroup(
-			gl_viewPanel.createParallelGroup(Alignment.TRAILING)
+				gl_viewPanel.createParallelGroup(Alignment.TRAILING)
 				.addGroup(gl_viewPanel.createSequentialGroup()
-					.addGap(3)
-					.addComponent(imagePanel)
-					.addGap(3)
-					.addComponent(buttonControlPanel, 37, 37, 37))
-		);
+						.addGap(3)
+						.addComponent(imagePanel)
+						.addGap(3)
+						.addComponent(buttonControlPanel, 37, 37, 37))
+				);
 		
 		GroupLayout gl_listPanel = new GroupLayout(listPanel);
 		gl_listPanel.setHorizontalGroup(
-			gl_listPanel.createParallelGroup(Alignment.LEADING)
+				gl_listPanel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_listPanel.createSequentialGroup()
-					.addComponent(folderScroller))
+						.addComponent(folderScroller))
 				.addGroup(gl_listPanel.createSequentialGroup()
-					.addComponent(fileScroller))
+						.addComponent(fileScroller))
 				.addGroup(gl_listPanel.createSequentialGroup()
-					.addComponent(buttonListPanel, 300, 300, 300))
-		);
+						.addComponent(buttonListPanel, 300, 300, 300))
+				);
 		gl_listPanel.setVerticalGroup(
-			gl_listPanel.createParallelGroup(Alignment.LEADING)
+				gl_listPanel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_listPanel.createSequentialGroup()
-					.addComponent(folderScroller, 150, 150, 150)
-					.addGap(5)
-					.addComponent(fileScroller)
-					.addComponent(buttonListPanel, 37, 37, 37))
-		);
+						.addComponent(folderScroller, 150, 150, 150)
+						.addGap(5)
+						.addComponent(fileScroller)
+						.addComponent(buttonListPanel, 37, 37, 37))
+				);
 		
 		listPanel.setLayout(gl_listPanel);
 		viewPanel.setLayout(gl_viewPanel);

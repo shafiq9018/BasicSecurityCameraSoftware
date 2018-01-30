@@ -1,10 +1,10 @@
 package sharedObjects;
 
 public class NetFileList {
-	private String[] files = null;
-	private int capacity = 0;
-	private String dir = null;
-	private long n = 0;
+	private volatile String[] files = null;
+	private volatile int capacity = 0;
+	private volatile String dir = null;
+	private volatile long n = 0;
 	
 	public NetFileList() {
 		

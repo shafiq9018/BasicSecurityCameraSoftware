@@ -98,8 +98,8 @@ public class ImagePanel extends JPanel {
 			graphics.setFont(new Font("SansSerif", Font.PLAIN, 14));
 			FontMetrics fontMetrics = graphics.getFontMetrics();
 			Rectangle2D rect = fontMetrics.getStringBounds(messageCopy, graphics);
-	        int stringWidth = (int)Math.round(rect.getWidth());
-	        int stringHeight = (int)Math.round(rect.getHeight());
+			int stringWidth = (int)Math.round(rect.getWidth());
+			int stringHeight = (int)Math.round(rect.getHeight());
 			
 			if(imageCopy != null) {
 				graphics.setColor(Color.white);

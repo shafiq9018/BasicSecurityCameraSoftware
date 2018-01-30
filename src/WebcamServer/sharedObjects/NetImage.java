@@ -1,9 +1,9 @@
 package sharedObjects;
 
 public class NetImage {
-	private byte[] byteImage = null;
-	private String dir = null, file = null;
-	private long n = 0;
+	private volatile byte[] byteImage = null;
+	private volatile String dir = null, file = null;
+	private volatile long n = 0;
 
 	public NetImage() {
 		

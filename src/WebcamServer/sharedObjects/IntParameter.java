@@ -1,8 +1,8 @@
 package sharedObjects;
 
 public class IntParameter {
-	private String key = null;
-	private long value = 0;
+	private volatile String key = null;
+	private volatile long value = 0;
 
 	public IntParameter() {
 		

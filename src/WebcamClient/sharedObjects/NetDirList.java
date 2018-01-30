@@ -1,9 +1,9 @@
 package sharedObjects;
 
 public class NetDirList {
-	private String[] dirs = null;
-	private int capacity = 0;
-	private long n = 0;
+	private volatile String[] dirs = null;
+	private volatile int capacity = 0;
+	private volatile long n = 0;
 	
 	public NetDirList() {
 		

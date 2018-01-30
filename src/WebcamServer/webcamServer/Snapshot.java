@@ -3,8 +3,8 @@ package webcamServer;
 import java.time.LocalDateTime;
 
 public class Snapshot {
-	private LocalDateTime timestamp = null;
-	private byte[] image = null;
+	private volatile LocalDateTime timestamp = null;
+	private volatile byte[] image = null;
 
 	public Snapshot() {
 		

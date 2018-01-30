@@ -2,14 +2,13 @@ package sharedObjects;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
-
 import com.esotericsoftware.kryo.*;
 import com.esotericsoftware.kryo.io.*;
 
 @SuppressWarnings("rawtypes")
 public class CryptoSerializer extends Serializer {
 	private final Serializer serializer;
-	private NetworkKey networkKey;
+	private volatile NetworkKey networkKey;
 
 	public CryptoSerializer (Serializer serializer, NetworkKey networkKey) {
 		this.serializer = serializer;
