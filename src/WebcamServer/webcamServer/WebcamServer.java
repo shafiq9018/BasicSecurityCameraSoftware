@@ -25,7 +25,7 @@ import org.bitlet.weupnp.*;
 import sharedObjects.*;
 
 public class WebcamServer {
-	private static final String version = "1.2.1";
+	private static final String version = "1.2.2";
 	public final static Logger logger = new Logger();
 	private static volatile boolean killThread = false;
 	private static volatile Webcam webcam = null;
@@ -90,6 +90,7 @@ public class WebcamServer {
 		
 		if(readString("Webcam type (usb/ip): ", scanner, settingsFile != null, new String[] {"usb", "ip"}, true, 0).equals("ip")) {
 			Webcam.setDriver(new IpCamDriver());
+			try { Thread.sleep(250); } catch (InterruptedException e) { }
 			System.out.println();
 
 			String url = readString("mjpeg stream url: ", scanner, settingsFile != null, null, false, 1); // like http://x.x.x.x/mjpg/video.mjpg
@@ -114,14 +115,20 @@ public class WebcamServer {
 		}
 		else {
 			String os = System.getProperty("os.name").toLowerCase();
-			if(os.contains("win") || os.contains("mac")) {
+			boolean useNativeLibrary = os.contains("win") || os.contains("mac");
+			if(useNativeLibrary) {
 				logger.logLn("Loading native library");
 				Webcam.setDriver(new NativeWebcamDriver());
+				try { Thread.sleep(250); } catch (InterruptedException e) { }
 				System.out.println();
 			}
 			else logger.logLn("Loading default library");
 
 			java.util.List<Webcam> webcams = Webcam.getWebcams();
+			if(!useNativeLibrary) {
+				try { Thread.sleep(250); } catch (InterruptedException e) { }
+				System.out.println();
+			}
 			if(webcams == null || webcams.size() == 0) {
 				logger.logLn("No webcams found");
 				System.exit(0);
@@ -131,6 +138,12 @@ public class WebcamServer {
 				for(int i = 0; i < webcams.size(); i++) System.out.println("[" + i + "] " + webcams.get(i).getName());
 				int selection = readInt("Choose a webcam: ", scanner, settingsFile != null, 0, webcams.size() - 1);
 				webcam = webcams.get(selection);
+			}
+			
+			if(useNativeLibrary) {
+				System.out.println("Supported resolutions:");
+				for(Dimension size : webcam.getViewSizes()) System.out.println((int)Math.round(size.getWidth()) + " x " + (int)Math.round(size.getHeight()));
+				System.out.println();
 			}
 		}
 
