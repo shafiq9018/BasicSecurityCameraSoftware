@@ -25,7 +25,7 @@ import org.bitlet.weupnp.*;
 import sharedObjects.*;
 
 public class WebcamServer {
-	private static final String version = "1.2";
+	private static final String version = "1.2.1";
 	public final static Logger logger = new Logger();
 	private static volatile boolean killThread = false;
 	private static volatile Webcam webcam = null;
