@@ -6,6 +6,9 @@ import java.awt.image.*;
 import java.io.*;
 import java.net.*;
 import java.security.*;
+import java.time.*;
+import java.time.format.*;
+import java.time.temporal.*;
 import java.util.*;
 import java.util.concurrent.*;
 import javax.crypto.spec.*;
@@ -25,7 +28,7 @@ public class HistoryViewFrame extends JFrame {
 	private volatile NetworkKey networkKey = new NetworkKey("Blowfish", "Blowfish", false); // new NetworkKey("AES", "AES/CBC/PKCS5Padding", true);
 	private volatile Client client = null;
 	private volatile long frameCounter = 0;
-	private volatile boolean busy = false;
+	private volatile boolean busy = false, enableFileChangeListener = true;
 	private volatile int lastDownloadFileFolder = -1, lastDownloadFileFile = -1, lastDownloadFolderFolder = -1;
 	private volatile java.util.List<String> tempList = null;
 	private volatile String textOverlay = null;
@@ -50,11 +53,12 @@ public class HistoryViewFrame extends JFrame {
 	private JButton next100Button;
 	private JButton downloadButton;
 	private JButton refreshButton;
+	private JToggleButton playButton;
 	
 	public HistoryViewFrame(Component parent, String address, String password, int port) {
 		setTitle("History view - " + address + ":" + port);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setMinimumSize(new Dimension(700, 350));
+		setMinimumSize(new Dimension(720, 350));
 		setSize(800, 500);
 		setLocationRelativeTo(parent);
 		
@@ -93,6 +97,8 @@ public class HistoryViewFrame extends JFrame {
 				if(fileList.getSelectedIndices().length > 1) return;
 				
 				fileList.ensureIndexIsVisible(fileList.getSelectedIndex());
+				
+				if(!enableFileChangeListener) return;
 				
 				executor.submit(new Runnable() {
 					public void run() {
@@ -170,6 +176,24 @@ public class HistoryViewFrame extends JFrame {
 			}
 		});
 		
+		playButton = new JToggleButton("\ue037");
+		playButton.setFont(WebcamClient.iconFont);
+		playButton.setMinimumSize(new Dimension(27, 27));
+		playButton.setMaximumSize(new Dimension(27, 27));
+		playButton.setPreferredSize(new Dimension(27, 27));
+		playButton.setMargin(new Insets(-100, -100, -100, -100));
+		playButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(playButton.isSelected()) {
+					executor.submit(new Runnable() {
+						public void run() {
+							play();
+						}
+					});
+				}
+			}
+		});
+		
 		downloadButton = new JButton("Download selection");
 		downloadButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -198,6 +222,7 @@ public class HistoryViewFrame extends JFrame {
 		buttonControlPanel.add(prev100Button);
 		buttonControlPanel.add(prev10Button);
 		buttonControlPanel.add(prev1Button);
+		buttonControlPanel.add(playButton);
 		buttonControlPanel.add(next1Button);
 		buttonControlPanel.add(next10Button);
 		buttonControlPanel.add(next100Button);
@@ -498,6 +523,59 @@ public class HistoryViewFrame extends JFrame {
 			WebcamClient.logger.logException(e);
 		}
 	}
+	
+	private void play() {
+		try {
+			if(dlmFile.size() < 1) return;
+			if(!client.isConnected()) return;
+			int selection = fileList.getSelectedIndex();
+			if(selection < 1) selection = 0;
+			
+			DateTimeFormatter fileFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss.SSS");
+			enableFileChangeListener = false;
+			
+			long lastTimeProcess = System.nanoTime();
+			LocalDateTime actualDateTime = LocalDateTime.parse(leaveOnlyTimestamp(dlmFile.getElementAt(selection)), fileFormatter);
+			while(selection < dlmFile.size() && playButton.isSelected()) {
+				long difference = 0;
+				if(selection < dlmFile.size() - 1) {
+					LocalDateTime nextDateTime = LocalDateTime.parse(leaveOnlyTimestamp(dlmFile.getElementAt(selection + 1)), fileFormatter);
+					
+					difference = ChronoUnit.MILLIS.between(actualDateTime, nextDateTime);
+					if(difference < 0) difference = 0;
+					if(difference > 1000) difference = 1000;
+					
+					actualDateTime = nextDateTime;
+				}
+				
+				int index = selection;
+				BooleanWrapper threadBusy = new BooleanWrapper(true);
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						fileList.setSelectedIndex(index);
+						threadBusy.setValue(false);
+					}
+				});
+				while(threadBusy.getValue()) {
+					try { Thread.sleep(0, 100); } catch (InterruptedException e) { }
+				}
+				downloadImage(folderList.getSelectedIndex(), selection, null);
+				
+				selection++;
+				
+				long delay = difference - (System.nanoTime() - lastTimeProcess) / 1000000;
+				if(delay > 0 && delay <= 1000) {
+					try { Thread.sleep(delay); } catch (InterruptedException e) { }
+				}
+				lastTimeProcess = System.nanoTime();
+			}
+			playButton.setSelected(false);
+		} catch (Exception e) {
+			WebcamClient.logger.logException(e);
+		}
+		
+		enableFileChangeListener = true;
+	}
 
 	private void downloadImage(int selectionFolder, int selectionFile, String overlay) {
 		try {
@@ -518,6 +596,22 @@ public class HistoryViewFrame extends JFrame {
 		} catch (Exception e) {
 			WebcamClient.logger.logException(e);
 		}
+	}
+	
+	private String leaveOnlyTimestamp(String s) {
+		for(int i = 0; i < s.length(); i++) {
+			if(Character.isDigit(s.charAt(i))) {
+				s = s.substring(i);
+				break;
+			}
+		}
+		for(int i = s.length() - 1; i >= 0; i--) {
+			if(Character.isDigit(s.charAt(i))) {
+				s = s.substring(0, i + 1);
+				break;
+			}
+		}
+		return s;
 	}
 	
 	@Override
