@@ -1,15 +1,13 @@
 package webcamClient;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.net.InetAddress;
-import java.security.MessageDigest;
-import javax.crypto.spec.SecretKeySpec;
-import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.MemoryCacheImageInputStream;
+import java.awt.image.*;
+import java.io.*;
+import java.net.*;
+import java.security.*;
+import javax.crypto.spec.*;
+import javax.imageio.*;
+import javax.imageio.stream.*;
 import javax.swing.*;
 import java.util.concurrent.*;
 import com.esotericsoftware.kryo.*;
@@ -19,7 +17,7 @@ import sharedObjects.*;
 public class LiveViewFrame extends JFrame {
 	private static final long serialVersionUID = 2747390727370492324L;
 	
-	private volatile ImagePanel panel = new ImagePanel();
+	private volatile ImagePanel panel = new ImagePanel(true);
 	private volatile NetworkKey networkKey = new NetworkKey("Blowfish", "Blowfish", false); // new NetworkKey("AES", "AES/CBC/PKCS5Padding", true);
 	private volatile Client client = null;
 	private volatile long frameCounter = 0;
@@ -97,6 +95,17 @@ public class LiveViewFrame extends JFrame {
 													setSize(x + getInsets().left + getInsets().right, y + getInsets().top + getInsets().bottom);
 												}
 												panel.update(imageBytes, img, null);
+												
+												File path = panel.getRecordingPath();
+												if(path != null && imageBytes != null) {
+													String imgFile;
+													if(((NetImage) object).getFile() != null) imgFile = ((NetImage) object).getFile();
+													else imgFile = "Snapshot_" + System.currentTimeMillis() + ".jpg";
+													File file = new File(path, imgFile);
+													FileOutputStream fos = new FileOutputStream(file);
+													fos.write(imageBytes);
+													fos.close();
+												}
 											} catch (Exception e) {
 												WebcamClient.logger.logException(e);
 											}

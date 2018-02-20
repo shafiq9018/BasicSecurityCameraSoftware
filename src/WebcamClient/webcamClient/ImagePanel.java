@@ -2,7 +2,7 @@ package webcamClient;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.*;
 import java.awt.image.*;
 import java.io.*;
 import javax.swing.*;
@@ -14,15 +14,16 @@ public class ImagePanel extends JPanel {
 	private volatile byte[] byteImage = null;
 	private volatile BufferedImage bufferedImage = null;
 	private volatile String message = null;
+	private volatile File recordingPath = null;
 
-	public ImagePanel() {
+	public ImagePanel(boolean canRecord) {
 		setLayout(null);
 		
-		JButton button = new JButton("\ue412");
-		button.setFont(WebcamClient.iconFont);
-		button.setMargin(new Insets(-100, -100, -100, -100));
-		button.setBounds(0, 0, 27, 27);
-		button.addActionListener(new ActionListener() {
+		JButton saveButton = new JButton("\ue412");
+		saveButton.setFont(WebcamClient.iconFont);
+		saveButton.setMargin(new Insets(-100, -100, -100, -100));
+		saveButton.setBounds(0, 0, 27, 27);
+		saveButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				java.awt.EventQueue.invokeLater(new Runnable() {
 					public void run() {
@@ -55,7 +56,35 @@ public class ImagePanel extends JPanel {
 				});
 			}
 		});
-		add(button);
+		add(saveButton);
+		
+		if(canRecord) {
+			JToggleButton recordButton = new JToggleButton("\ue061");
+			recordButton.setFont(WebcamClient.iconFont);
+			recordButton.setMargin(new Insets(-100, -100, -100, -100));
+			recordButton.setBounds(30, 0, 27, 27);
+			recordButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if(recordButton.isSelected()) {
+						java.awt.EventQueue.invokeLater(new Runnable() {
+							public void run() {
+								JFileChooser chooser = new JFileChooser();
+								chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+								chooser.setAcceptAllFileFilterUsed(false);
+								if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) recordingPath = chooser.getSelectedFile();
+								else recordButton.setSelected(false);
+							}
+						});
+					}
+					else recordingPath = null;
+				}
+			});
+			add(recordButton);
+		}
+	}
+	
+	public synchronized File getRecordingPath() {
+		return recordingPath;
 	}
 	
 	public synchronized byte[] getByteImage() {

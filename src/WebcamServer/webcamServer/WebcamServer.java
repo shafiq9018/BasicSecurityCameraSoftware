@@ -25,15 +25,15 @@ import org.bitlet.weupnp.*;
 import sharedObjects.*;
 
 public class WebcamServer {
-	private static final String version = "1.2.2";
+	private static final String version = "1.3";
 	public final static Logger logger = new Logger();
 	private static volatile boolean killThread = false;
 	private static volatile Webcam webcam = null;
 	private static volatile boolean isIpCamera = false;
 	private static volatile String settingsString = null;
 	private static volatile TJCompressor turboJpegCompressor = null;
-
-	private static volatile Snapshot lastSnapshot = new Snapshot();
+	
+	private static final DateTimeFormatter fileFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss.SSS"), folderFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");;
 	private static volatile NetImage lastWebcamImage = new NetImage();
 	private static volatile byte[] emptyImage = new byte[0];
 	private static volatile int httpPort = -1, tcpLivePort = -1, tcpHistoryPort = -1, udpDiscoveryPort = -1;
@@ -391,26 +391,24 @@ public class WebcamServer {
 		if(snapshotFolder != null) {
 			logger.logLn("Initializing file archive");
 
-			DateTimeFormatter folderFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-			DateTimeFormatter fileFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss.SSS");
-
 			new Thread() {
 				public void run() {
-					long lastTimeProcess = System.nanoTime();
+					long lastTimeProcess = System.nanoTime(), frameCounter = 0;
 
 					while(!killThread) {
 						try {
-							Snapshot copy = lastSnapshot;
-							lastSnapshot = new Snapshot();
+							NetImage copy = lastWebcamImage;
 
-							if(copy.getImage() != null && copy.getTimestamp() != null) {
-								File folder = new File(snapshotFolder.getAbsolutePath() + File.separator + copy.getTimestamp().format(folderFormatter));
+							if(copy.getBytes() != null && copy.getDir() != null && copy.getFile() != null && copy.getNumber() != frameCounter) {
+								File folder = new File(snapshotFolder.getAbsolutePath(), copy.getDir());
 								folder.mkdirs();
-								File file = new File(folder.getAbsolutePath() + File.separator + "Snapshot_" + copy.getTimestamp().format(fileFormatter) + ".jpg");
+								File file = new File(folder.getAbsolutePath(), copy.getFile());
 								FileOutputStream fos = new FileOutputStream(file);
-								fos.write(copy.getImage());
+								fos.write(copy.getBytes());
 								fos.close();
 							}
+							
+							frameCounter = copy.getNumber();
 						} catch (Exception e) {
 							logger.logException(e);
 						}
@@ -535,8 +533,7 @@ public class WebcamServer {
 													File folder = new File(snapshotFolder, ((NetImage) object).getDir());
 													File file = new File(folder, ((NetImage) object).getFile());
 													byte[] img = Files.readAllBytes(file.toPath());
-													NetImage ni = new NetImage();
-													ni.setBytes(img);
+													NetImage ni = new NetImage(img, ((NetImage) object).getDir(), ((NetImage) object).getFile());
 													sendNetList.add(new ObjectID(connection.getID(), ni));
 												} catch (Exception e) {
 													logger.logException(e);
@@ -736,7 +733,7 @@ public class WebcamServer {
 						logger.logException(e);
 					}
 					
-					long lastTimeProcess = System.nanoTime();
+					long lastTimeProcess = System.nanoTime(), frameCounter = 0;
 					while(!killThread) {
 						if(isIpCamera && ipCamErrorCounter > 40 * maxFps + 2) {
 							try {
@@ -878,13 +875,11 @@ public class WebcamServer {
 							byte[] byteImage = new byte[turboJpegCompressor.getCompressedSize()];
 							System.arraycopy(jpegBuf, 0, byteImage, 0, byteImage.length);
 
-							lastWebcamImage.setBytes(byteImage);
-							lastSnapshot.update(nowDateTime, byteImage);
+							lastWebcamImage = new NetImage(byteImage, getFolderName(nowDateTime), getFileName(nowDateTime), ++frameCounter);
 						} catch (Exception e) {
 							logger.logException(e);
 
-							lastWebcamImage.setBytes(null);
-							lastSnapshot.update(null, null);
+							lastWebcamImage = new NetImage();
 						}
 
 						long interval = 750 / maxFps; // A little faster than fps
@@ -1000,6 +995,14 @@ public class WebcamServer {
 			for (File f : contents) deleteDir(f);
 		}
 		file.delete();
+	}
+	
+	private static String getFileName(LocalDateTime ldt) {
+		return "Snapshot_" + ldt.format(fileFormatter) + ".jpg";
+	}
+	
+	private static String getFolderName(LocalDateTime ldt) {
+		return ldt.format(folderFormatter);
 	}
 
 	private static int readInt(String message, Scanner scanner, boolean echo, int min, int max) {

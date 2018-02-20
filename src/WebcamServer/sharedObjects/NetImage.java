@@ -9,6 +9,19 @@ public class NetImage {
 		
 	}
 	
+	public NetImage(byte[] byteImage, String dir, String file) {
+		this.byteImage = byteImage;
+		this.dir = dir;
+		this.file = file;
+	}
+	
+	public NetImage(byte[] byteImage, String dir, String file, long n) {
+		this.byteImage = byteImage;
+		this.dir = dir;
+		this.file = file;
+		this.n = n;
+	}
+	
 	public NetImage(long n) {
 		this.n = n;
 	}

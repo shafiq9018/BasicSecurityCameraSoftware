@@ -38,7 +38,7 @@ public class HistoryViewFrame extends JFrame {
 	private JPanel contentPane;
 	private JList<String> folderList;
 	private JList<String> fileList;
-	private ImagePanel imagePanel = new ImagePanel();
+	private ImagePanel imagePanel = new ImagePanel(false);
 	private JButton prev1Button;
 	private JButton next1Button;
 	private JScrollPane folderScroller;
