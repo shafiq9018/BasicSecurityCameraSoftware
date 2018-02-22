@@ -505,8 +505,9 @@ public class HistoryViewFrame extends JFrame {
 			if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
 				lastDownloadFileFolder = -1;
 				lastDownloadFileFile = -1;
+				int selectionSize = selection.length, selectionIndex = 1;
 				for(int index : selection) {
-					downloadImage(folderIndex, index, "Downloading");
+					downloadImage(folderIndex, index, "Downloading - " + String.format("%.2f", (double)selectionIndex / (double)selectionSize * 100.0) + "%");
 					File out = new File(chooser.getSelectedFile(), dlmFile.get(index));
 					try{
 						FileOutputStream fos = new FileOutputStream(out);
@@ -515,9 +516,21 @@ public class HistoryViewFrame extends JFrame {
 					} catch(Exception e) {
 						WebcamClient.logger.logException(e);
 					}
+					
+					selectionIndex++;
 				}
 				imagePanel.updateMessage(null);
-				fileList.setSelectedIndex(selection[selection.length - 1]);
+				
+				BooleanWrapper threadBusy = new BooleanWrapper(true);
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						fileList.setSelectedIndex(selection[selection.length - 1]);
+						threadBusy.setValue(false);
+					}
+				});
+				while(threadBusy.getValue()) {
+					try { Thread.sleep(0, 100); } catch (InterruptedException e) { }
+				}
 			}
 		} catch (Exception e) {
 			WebcamClient.logger.logException(e);
@@ -526,8 +539,14 @@ public class HistoryViewFrame extends JFrame {
 	
 	private void play() {
 		try {
-			if(dlmFile.size() < 1) return;
-			if(!client.isConnected()) return;
+			if(dlmFile.size() < 1) {
+				playButton.setSelected(false);
+				return;
+			}
+			if(!client.isConnected()) {
+				playButton.setSelected(false);
+				return;
+			}
 			int selection = fileList.getSelectedIndex();
 			if(selection < 1) selection = 0;
 			

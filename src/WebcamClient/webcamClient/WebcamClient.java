@@ -12,7 +12,7 @@ import sharedObjects.*;
 public class WebcamClient extends JFrame {
 	private static final long serialVersionUID = -6230405403723444365L;
 	
-	private static final String version = "1.2";
+	private static final String version = "1.2.1";
 	public static final Logger logger = new Logger();
 	public static Font iconFont = null;
 	private static WebcamClient thisFrame;
