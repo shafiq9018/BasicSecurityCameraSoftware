@@ -25,7 +25,7 @@ import org.bitlet.weupnp.*;
 import sharedObjects.*;
 
 public class WebcamServer {
-	private static final String version = "1.3";
+	private static final String version = "1.3.1";
 	public final static Logger logger = new Logger();
 	private static volatile boolean killThread = false;
 	private static volatile Webcam webcam = null;
@@ -116,6 +116,7 @@ public class WebcamServer {
 		else {
 			String os = System.getProperty("os.name").toLowerCase();
 			boolean useNativeLibrary = os.contains("win") || os.contains("mac");
+			if(Arrays.asList(args).contains("-nonativelib")) useNativeLibrary = false;
 			if(useNativeLibrary) {
 				logger.logLn("Loading native library");
 				Webcam.setDriver(new NativeWebcamDriver());
@@ -521,6 +522,8 @@ public class WebcamServer {
 									if(historyIntFlags.containsKey(connection.getID())) {
 										number = historyIntFlags.get(connection.getID());
 										if(((NetImage) object).getNumber() == number) authorized = true;
+										if(((NetImage) object).getDir().contains("/") || ((NetImage) object).getDir().contains("\\")) authorized = false;
+										if(((NetImage) object).getFile().contains("/") || ((NetImage) object).getFile().contains("\\")) authorized = false;
 									}
 
 									if(authorized) {
@@ -553,6 +556,7 @@ public class WebcamServer {
 									if(historyIntFlags.containsKey(connection.getID())) {
 										number = historyIntFlags.get(connection.getID());
 										if(((NetFileList) object).getNumber() == number) authorized = true;
+										if(((NetFileList) object).getDir().contains("/") || ((NetFileList) object).getDir().contains("\\")) authorized = false;
 									}
 
 									if(authorized) {
