@@ -51,6 +51,8 @@ public class HistoryViewFrame extends JFrame {
 	private JButton next10Button;
 	private JButton prev100Button;
 	private JButton next100Button;
+	private JButton prev1000Button;
+	private JButton next1000Button;
 	private JButton downloadButton;
 	private JButton refreshButton;
 	private JToggleButton playButton;
@@ -58,8 +60,8 @@ public class HistoryViewFrame extends JFrame {
 	public HistoryViewFrame(Component parent, String address, String password, int port) {
 		setTitle("History view - " + address + ":" + port);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setMinimumSize(new Dimension(720, 350));
-		setSize(800, 500);
+		setMinimumSize(new Dimension(870, 350));
+		setSize(900, 500);
 		setLocationRelativeTo(parent);
 		
 		imagePanel.setBorder(new LineBorder(new Color(0, 0, 0)));
@@ -176,6 +178,28 @@ public class HistoryViewFrame extends JFrame {
 			}
 		});
 		
+		prev1000Button = new JButton("< 1000");
+		prev1000Button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int prevSelection = fileList.getSelectedIndex();
+				int selection = prevSelection - 1000;
+				if(selection < 0) selection = 0;
+				if(selection >= dlmFile.size()) selection = dlmFile.size() - 1;
+				if(selection != prevSelection) fileList.setSelectedIndex(selection);
+			}
+		});
+		
+		next1000Button = new JButton("1000 >");
+		next1000Button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int prevSelection = fileList.getSelectedIndex();
+				int selection = prevSelection + 1000;
+				if(selection < 0) selection = 0;
+				if(selection >= dlmFile.size()) selection = dlmFile.size() - 1;
+				if(selection != prevSelection) fileList.setSelectedIndex(selection);
+			}
+		});
+		
 		playButton = new JToggleButton("\ue037");
 		playButton.setFont(WebcamClient.iconFont);
 		playButton.setMinimumSize(new Dimension(27, 27));
@@ -219,6 +243,7 @@ public class HistoryViewFrame extends JFrame {
 		listPanel = new JPanel();
 		viewPanel = new JPanel();
 		buttonControlPanel = new JPanel();
+		buttonControlPanel.add(prev1000Button);
 		buttonControlPanel.add(prev100Button);
 		buttonControlPanel.add(prev10Button);
 		buttonControlPanel.add(prev1Button);
@@ -226,6 +251,7 @@ public class HistoryViewFrame extends JFrame {
 		buttonControlPanel.add(next1Button);
 		buttonControlPanel.add(next10Button);
 		buttonControlPanel.add(next100Button);
+		buttonControlPanel.add(next1000Button);
 		buttonListPanel = new JPanel();
 		buttonListPanel.add(refreshButton);
 		buttonListPanel.add(downloadButton);
