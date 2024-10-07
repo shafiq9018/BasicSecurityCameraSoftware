@@ -1,15 +1,15 @@
 package sharedObjects;
 
-public class NetDirList {
+public class netDirList {
 	private volatile String[] dirs = null;
 	private volatile int capacity = 0;
 	private volatile long n = 0;
 	
-	public NetDirList() {
+	public netDirList() {
 		
 	}
 	
-	public NetDirList(long n) {
+	public netDirList(long n) {
 		this.n = n;
 	}
 	

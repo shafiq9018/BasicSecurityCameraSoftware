@@ -18,7 +18,7 @@ public class LiveViewFrame extends JFrame {
 	private static final long serialVersionUID = 2747390727370492324L;
 	
 	private volatile ImagePanel panel = new ImagePanel(true);
-	private volatile NetworkKey networkKey = new NetworkKey("Blowfish", "Blowfish", false); // new NetworkKey("AES", "AES/CBC/PKCS5Padding", true);
+	private volatile sharedObjects.networkKey networkKey = new networkKey("Blowfish", "Blowfish", false); // new NetworkKey("AES", "AES/CBC/PKCS5Padding", true);
 	private volatile Client client = null;
 	private volatile long frameCounter = 0;
 	private volatile int frameRate = 1;
@@ -45,10 +45,10 @@ public class LiveViewFrame extends JFrame {
 
 					Kryo kryo = client.getKryo();
 					kryo.register(byte[].class);
-					Registration r = kryo.register(NetImage.class);
-					kryo.register(NetImage.class, new CryptoSerializer(r.getSerializer(), networkKey), r.getId());
-					r = kryo.register(IntParameter.class);
-					kryo.register(IntParameter.class, new CryptoSerializer(r.getSerializer(), networkKey), r.getId());
+					Registration r = kryo.register(netImage.class);
+					kryo.register(netImage.class, new cryptoSerializer(r.getSerializer(), networkKey), r.getId());
+					r = kryo.register(intParameter.class);
+					kryo.register(intParameter.class, new cryptoSerializer(r.getSerializer(), networkKey), r.getId());
 
 					client.addListener(new Listener() {
 						long lastTimeTx = 0;
@@ -62,8 +62,8 @@ public class LiveViewFrame extends JFrame {
 								connection.setTimeout(12000);
 								connection.setIdleThreshold(0.01f);
 
-								connection.sendTCP(new IntParameter("fps", 0));
-								connection.sendTCP(new IntParameter("start", 0));
+								connection.sendTCP(new intParameter("fps", 0));
+								connection.sendTCP(new intParameter("start", 0));
 							} catch (Exception e) {
 								WebcamClient.logger.logException(e);
 							}
@@ -77,11 +77,11 @@ public class LiveViewFrame extends JFrame {
 						public void received (Connection connection, Object object) {
 							try {
 								if(object == null) return;
-								else if(object instanceof NetImage) {
+								else if(object instanceof netImage) {
 									executor.submit(new Runnable() {
 										public void run() {
 											try {
-												byte[] imageBytes = ((NetImage) object).getBytes();
+												byte[] imageBytes = ((netImage) object).getBytes();
 												BufferedImage img = null;
 												if(imageBytes != null) {
 													InputStream in = new ByteArrayInputStream(imageBytes);
@@ -99,7 +99,7 @@ public class LiveViewFrame extends JFrame {
 												File path = panel.getRecordingPath();
 												if(path != null && imageBytes != null) {
 													String imgFile;
-													if(((NetImage) object).getFile() != null) imgFile = ((NetImage) object).getFile();
+													if(((netImage) object).getFile() != null) imgFile = ((netImage) object).getFile();
 													else imgFile = "Snapshot_" + System.currentTimeMillis() + ".jpg";
 													File file = new File(path, imgFile);
 													FileOutputStream fos = new FileOutputStream(file);
@@ -116,22 +116,22 @@ public class LiveViewFrame extends JFrame {
 												try { Thread.sleep(delay); } catch (InterruptedException e) { }
 											}
 
-											connection.sendTCP(new NetImage(++frameCounter));
+											connection.sendTCP(new netImage(++frameCounter));
 											lastTimeTx = System.nanoTime();
 										}
 									});
 								}
-								else if(object instanceof IntParameter) {
-									String key = ((IntParameter) object).getKey();
+								else if(object instanceof intParameter) {
+									String key = ((intParameter) object).getKey();
 									if(key == null) key = "";
 
 									switch(key) {
 									case "fps":
-										frameRate = (int) ((IntParameter) object).getValue();
+										frameRate = (int) ((intParameter) object).getValue();
 										break;
 									case "start":
-										frameCounter = ((IntParameter) object).getValue();
-										connection.sendTCP(new NetImage(++frameCounter));
+										frameCounter = ((intParameter) object).getValue();
+										connection.sendTCP(new netImage(++frameCounter));
 										lastTimeTx = System.nanoTime();
 										break;
 									default:

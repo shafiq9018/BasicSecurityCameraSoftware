@@ -3,10 +3,10 @@ package sharedObjects;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class Logger {
+public class logger {
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
-	public Logger() {
+	public logger() {
 		
 	}
 	

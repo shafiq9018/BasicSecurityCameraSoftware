@@ -1,28 +1,28 @@
 package sharedObjects;
 
-public class NetImage {
+public class netImage {
 	private volatile byte[] byteImage = null;
 	private volatile String dir = null, file = null;
 	private volatile long n = 0;
 
-	public NetImage() {
+	public netImage() {
 		
 	}
 	
-	public NetImage(byte[] byteImage, String dir, String file) {
+	public netImage(byte[] byteImage, String dir, String file) {
 		this.byteImage = byteImage;
 		this.dir = dir;
 		this.file = file;
 	}
 	
-	public NetImage(byte[] byteImage, String dir, String file, long n) {
+	public netImage(byte[] byteImage, String dir, String file, long n) {
 		this.byteImage = byteImage;
 		this.dir = dir;
 		this.file = file;
 		this.n = n;
 	}
 	
-	public NetImage(long n) {
+	public netImage(long n) {
 		this.n = n;
 	}
 	

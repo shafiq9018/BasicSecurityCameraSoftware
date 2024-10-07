@@ -25,7 +25,7 @@ import sharedObjects.*;
 public class HistoryViewFrame extends JFrame {
 	private static final long serialVersionUID = -702757229682623362L;
 	
-	private volatile NetworkKey networkKey = new NetworkKey("Blowfish", "Blowfish", false); // new NetworkKey("AES", "AES/CBC/PKCS5Padding", true);
+	private volatile sharedObjects.networkKey networkKey = new networkKey("Blowfish", "Blowfish", false); // new NetworkKey("AES", "AES/CBC/PKCS5Padding", true);
 	private volatile Client client = null;
 	private volatile long frameCounter = 0;
 	private volatile boolean busy = false, enableFileChangeListener = true;
@@ -326,15 +326,15 @@ public class HistoryViewFrame extends JFrame {
 					Kryo kryo = client.getKryo();
 					kryo.register(byte[].class);
 					kryo.register(String[].class);
-					kryo.register(BooleanWrapper.class);
-					Registration r = kryo.register(NetImage.class);
-					kryo.register(NetImage.class, new CryptoSerializer(r.getSerializer(), networkKey), r.getId());
-					r = kryo.register(NetDirList.class);
-					kryo.register(NetDirList.class, new CryptoSerializer(r.getSerializer(), networkKey), r.getId());
-					r = kryo.register(NetFileList.class);
-					kryo.register(NetFileList.class, new CryptoSerializer(r.getSerializer(), networkKey), r.getId());
-					r = kryo.register(IntParameter.class);
-					kryo.register(IntParameter.class, new CryptoSerializer(r.getSerializer(), networkKey), r.getId());
+					kryo.register(booleanWrapper.class);
+					Registration r = kryo.register(netImage.class);
+					kryo.register(netImage.class, new cryptoSerializer(r.getSerializer(), networkKey), r.getId());
+					r = kryo.register(netDirList.class);
+					kryo.register(netDirList.class, new cryptoSerializer(r.getSerializer(), networkKey), r.getId());
+					r = kryo.register(netFileList.class);
+					kryo.register(netFileList.class, new cryptoSerializer(r.getSerializer(), networkKey), r.getId());
+					r = kryo.register(intParameter.class);
+					kryo.register(intParameter.class, new cryptoSerializer(r.getSerializer(), networkKey), r.getId());
 
 					client.addListener(new Listener() {
 						public void connected (Connection connection) {
@@ -346,7 +346,7 @@ public class HistoryViewFrame extends JFrame {
 								connection.setTimeout(12000);
 								connection.setIdleThreshold(0.01f);
 
-								connection.sendTCP(new IntParameter("start", 0));
+								connection.sendTCP(new intParameter("start", 0));
 							} catch (Exception e) {
 								WebcamClient.logger.logException(e);
 							}
@@ -360,11 +360,11 @@ public class HistoryViewFrame extends JFrame {
 						public void received (Connection connection, Object object) {
 							try {
 								if(object == null) return;
-								else if(object instanceof BooleanWrapper) {
-									busy = ((BooleanWrapper) object).getValue();
+								else if(object instanceof booleanWrapper) {
+									busy = ((booleanWrapper) object).getValue();
 								}
-								else if(object instanceof NetImage) {
-									byte[] imageBytes = ((NetImage) object).getBytes();
+								else if(object instanceof netImage) {
+									byte[] imageBytes = ((netImage) object).getBytes();
 									BufferedImage img = null;
 									if(imageBytes != null) {
 										InputStream in = new ByteArrayInputStream(imageBytes);
@@ -373,29 +373,29 @@ public class HistoryViewFrame extends JFrame {
 									}
 									imagePanel.update(imageBytes, img, textOverlay);
 								}
-								else if(object instanceof NetFileList) {
-									String[] files = ((NetFileList) object).getFiles();
+								else if(object instanceof netFileList) {
+									String[] files = ((netFileList) object).getFiles();
 									if(files != null) {
-										int max = ((NetFileList) object).getCapacity();
+										int max = ((netFileList) object).getCapacity();
 										for(int i = 0; i < max; i++) tempList.add(files[i]);
 									}
 									imagePanel.update(null, null, tempList.size() + " Files (downloading)");
 								}
-								else if(object instanceof NetDirList) {
-									String[] dirs = ((NetDirList) object).getDirs();
+								else if(object instanceof netDirList) {
+									String[] dirs = ((netDirList) object).getDirs();
 									if(dirs != null) {
-										int max = ((NetDirList) object).getCapacity();
+										int max = ((netDirList) object).getCapacity();
 										for(int i = 0; i < max; i++) tempList.add(dirs[i]);
 									}
 									imagePanel.update(null, null, tempList.size() + " Directories (downloading)");
 								}
-								else if(object instanceof IntParameter) {
-									String key = ((IntParameter) object).getKey();
+								else if(object instanceof intParameter) {
+									String key = ((intParameter) object).getKey();
 									if(key == null) key = "";
 
 									switch(key) {
 									case "start":
-										frameCounter = ((IntParameter) object).getValue();
+										frameCounter = ((intParameter) object).getValue();
 										executor.submit(new Runnable() {
 											public void run() {
 												downloadFolderList();
@@ -436,7 +436,7 @@ public class HistoryViewFrame extends JFrame {
 			
 			imagePanel.update(null, null, "Downloading folder list");
 			
-			BooleanWrapper threadBusy = new BooleanWrapper(true);
+			booleanWrapper threadBusy = new booleanWrapper(true);
 			EventQueue.invokeLater(new Runnable() {
 				public void run() {
 					dlmFile.removeAllElements();
@@ -453,7 +453,7 @@ public class HistoryViewFrame extends JFrame {
 			lastDownloadFolderFolder = -1;
 			lastDownloadFileFolder = -1;
 			lastDownloadFileFile = -1;
-			client.sendTCP(new NetDirList(++frameCounter));
+			client.sendTCP(new netDirList(++frameCounter));
 			while(busy) {
 				try { Thread.sleep(0, 100); } catch (InterruptedException e) { }
 			}
@@ -482,7 +482,7 @@ public class HistoryViewFrame extends JFrame {
 			imagePanel.update(null, null, "Downloading file list");
 			lastDownloadFolderFolder = selection;
 			
-			BooleanWrapper threadBusy = new BooleanWrapper(true);
+			booleanWrapper threadBusy = new booleanWrapper(true);
 			EventQueue.invokeLater(new Runnable() {
 				public void run() {
 					dlmFile.removeAllElements();
@@ -497,7 +497,7 @@ public class HistoryViewFrame extends JFrame {
 			tempList = new ArrayList<String>();
 			lastDownloadFileFolder = -1;
 			lastDownloadFileFile = -1;
-			NetFileList nfl = new NetFileList(++frameCounter);
+			netFileList nfl = new netFileList(++frameCounter);
 			nfl.setDir(dlmFolder.get(selection));
 			client.sendTCP(nfl);
 			while(busy) {
@@ -547,7 +547,7 @@ public class HistoryViewFrame extends JFrame {
 				}
 				imagePanel.updateMessage(null);
 				
-				BooleanWrapper threadBusy = new BooleanWrapper(true);
+				booleanWrapper threadBusy = new booleanWrapper(true);
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
 						fileList.setSelectedIndex(selection[selection.length - 1]);
@@ -594,7 +594,7 @@ public class HistoryViewFrame extends JFrame {
 				}
 				
 				int index = selection;
-				BooleanWrapper threadBusy = new BooleanWrapper(true);
+				booleanWrapper threadBusy = new booleanWrapper(true);
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
 						fileList.setSelectedIndex(index);
@@ -632,7 +632,7 @@ public class HistoryViewFrame extends JFrame {
 			
 			busy = true;
 			textOverlay = overlay;
-			NetImage ni = new NetImage(++frameCounter);
+			netImage ni = new netImage(++frameCounter);
 			ni.setLocation(dlmFolder.get(selectionFolder), dlmFile.get(selectionFile));
 			client.sendTCP(ni);
 			while(busy) {

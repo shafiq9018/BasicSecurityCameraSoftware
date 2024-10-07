@@ -13,7 +13,7 @@ public class WebcamClient extends JFrame {
 	private static final long serialVersionUID = -6230405403723444365L;
 	
 	private static final String version = "1.2.2";
-	public static final Logger logger = new Logger();
+	public static final sharedObjects.logger logger = new logger();
 	public static Font iconFont = null;
 	private static WebcamClient thisFrame;
 	private static JDialog errorDialog;
@@ -295,7 +295,7 @@ public class WebcamClient extends JFrame {
 						DatagramSocket discoverySocket = new DatagramSocket();
 						discoverySocket.setSoTimeout(1000);
 
-						BooleanWrapper transmit = new BooleanWrapper(true);
+						booleanWrapper transmit = new booleanWrapper(true);
 						final int scanPort = port;
 						new Thread() {
 							public void run() {

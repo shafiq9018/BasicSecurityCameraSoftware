@@ -1,14 +1,14 @@
 package sharedObjects;
 
-public class IntParameter {
+public class intParameter {
 	private volatile String key = null;
 	private volatile long value = 0;
 
-	public IntParameter() {
+	public intParameter() {
 		
 	}
 	
-	public IntParameter(String key, long value) {
+	public intParameter(String key, long value) {
 		this.key = key;
 		this.value = value;
 	}

@@ -6,11 +6,11 @@ import com.esotericsoftware.kryo.*;
 import com.esotericsoftware.kryo.io.*;
 
 @SuppressWarnings("rawtypes")
-public class CryptoSerializer extends Serializer {
+public class cryptoSerializer extends Serializer {
 	private final Serializer serializer;
-	private volatile NetworkKey networkKey;
+	private volatile sharedObjects.networkKey networkKey;
 
-	public CryptoSerializer (Serializer serializer, NetworkKey networkKey) {
+	public cryptoSerializer(Serializer serializer, sharedObjects.networkKey networkKey) {
 		this.serializer = serializer;
 		this.networkKey = networkKey;
 	}

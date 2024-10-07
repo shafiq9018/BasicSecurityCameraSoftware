@@ -26,7 +26,7 @@ import sharedObjects.*;
 
 public class WebcamServer {
 	private static final String version = "1.3.1";
-	public final static Logger logger = new Logger();
+	public final static sharedObjects.logger logger = new logger();
 	private static volatile boolean killThread = false;
 	private static volatile Webcam webcam = null;
 	private static volatile boolean isIpCamera = false;
@@ -34,7 +34,7 @@ public class WebcamServer {
 	private static volatile TJCompressor turboJpegCompressor = null;
 	
 	private static final DateTimeFormatter fileFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss.SSS"), folderFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");;
-	private static volatile NetImage lastWebcamImage = new NetImage();
+	private static volatile netImage lastWebcamImage = new netImage();
 	private static volatile byte[] emptyImage = new byte[0];
 	private static volatile int httpPort = -1, tcpLivePort = -1, tcpHistoryPort = -1, udpDiscoveryPort = -1;
 	private static volatile File snapshotFolder = null;
@@ -218,7 +218,7 @@ public class WebcamServer {
 				Map<Integer, Long> liveIntFlags = new ConcurrentHashMap<>(), liveFrameCounter = new ConcurrentHashMap<>();
 				Server server = new Server(5000000, 5000000);
 				
-				NetworkKey networkKey = new NetworkKey("Blowfish", "Blowfish", false); // new NetworkKey("AES", "AES/CBC/PKCS5Padding", true);
+				networkKey networkKey = new networkKey("Blowfish", "Blowfish", false); // new NetworkKey("AES", "AES/CBC/PKCS5Padding", true);
 				javax.crypto.Cipher.getInstance(networkKey.transformation);
 
 				networkKey.key = new SecretKeySpec(MessageDigest.getInstance("MD5").digest(tcpLivePassword.getBytes()), networkKey.algorithm);
@@ -226,10 +226,10 @@ public class WebcamServer {
 
 				Kryo kryo = server.getKryo();
 				kryo.register(byte[].class);
-				Registration r = kryo.register(NetImage.class);
-				kryo.register(NetImage.class, new CryptoSerializer(r.getSerializer(), networkKey), r.getId());
-				r = kryo.register(IntParameter.class);
-				kryo.register(IntParameter.class, new CryptoSerializer(r.getSerializer(), networkKey), r.getId());
+				Registration r = kryo.register(netImage.class);
+				kryo.register(netImage.class, new cryptoSerializer(r.getSerializer(), networkKey), r.getId());
+				r = kryo.register(intParameter.class);
+				kryo.register(intParameter.class, new cryptoSerializer(r.getSerializer(), networkKey), r.getId());
 
 				server.addListener(new Listener() {
 					public void connected (Connection connection) {
@@ -260,12 +260,12 @@ public class WebcamServer {
 					public void received (Connection connection, Object object) {
 						try {
 							if(object == null) return;
-							else if(object instanceof NetImage) {
+							else if(object instanceof netImage) {
 								boolean authorized = false;
 								long number = 0;
 								if(liveIntFlags.containsKey(connection.getID())) {
 									number = liveIntFlags.get(connection.getID());
-									if(((NetImage) object).getNumber() == number) authorized = true;
+									if(((netImage) object).getNumber() == number) authorized = true;
 								}
 
 								if(authorized) {
@@ -279,19 +279,19 @@ public class WebcamServer {
 									connection.close();
 								}
 							}
-							else if(object instanceof IntParameter) {
-								String key = ((IntParameter) object).getKey();
+							else if(object instanceof intParameter) {
+								String key = ((intParameter) object).getKey();
 								if(key == null) key = "";
 
 								switch(key) {
 								case "fps":
-									connection.sendTCP(new IntParameter("fps", maxFps));
+									connection.sendTCP(new intParameter("fps", maxFps));
 									break;
 								case "start":
 									logger.logLn("Live connection #" + connection.getID() + " requested stream start");
 									long start = new Random().nextLong();
 									liveIntFlags.put(connection.getID(), start + 1L);
-									connection.sendTCP(new IntParameter("start", start));
+									connection.sendTCP(new intParameter("start", start));
 									break;
 								default:
 									break;
@@ -398,7 +398,7 @@ public class WebcamServer {
 
 					while(!killThread) {
 						try {
-							NetImage copy = lastWebcamImage;
+							netImage copy = lastWebcamImage;
 
 							if(copy.getBytes() != null && copy.getDir() != null && copy.getFile() != null && copy.getNumber() != frameCounter) {
 								File folder = new File(snapshotFolder.getAbsolutePath(), copy.getDir());
@@ -467,7 +467,7 @@ public class WebcamServer {
 					ExecutorService executor = Executors.newFixedThreadPool(5);
 					Server server = new Server(5000000, 5000000);
 					
-					NetworkKey networkKey = new NetworkKey("Blowfish", "Blowfish", false); // new NetworkKey("AES", "AES/CBC/PKCS5Padding", true);
+					networkKey networkKey = new networkKey("Blowfish", "Blowfish", false); // new NetworkKey("AES", "AES/CBC/PKCS5Padding", true);
 					javax.crypto.Cipher.getInstance(networkKey.transformation);
 
 					networkKey.key = new SecretKeySpec(MessageDigest.getInstance("MD5").digest(tcpHistoryPassword.getBytes()), networkKey.algorithm);
@@ -476,15 +476,15 @@ public class WebcamServer {
 					Kryo kryo = server.getKryo();
 					kryo.register(byte[].class);
 					kryo.register(String[].class);
-					kryo.register(BooleanWrapper.class);
-					Registration r = kryo.register(NetImage.class);
-					kryo.register(NetImage.class, new CryptoSerializer(r.getSerializer(), networkKey), r.getId());
-					r = kryo.register(NetDirList.class);
-					kryo.register(NetDirList.class, new CryptoSerializer(r.getSerializer(), networkKey), r.getId());
-					r = kryo.register(NetFileList.class);
-					kryo.register(NetFileList.class, new CryptoSerializer(r.getSerializer(), networkKey), r.getId());
-					r = kryo.register(IntParameter.class);
-					kryo.register(IntParameter.class, new CryptoSerializer(r.getSerializer(), networkKey), r.getId());
+					kryo.register(booleanWrapper.class);
+					Registration r = kryo.register(netImage.class);
+					kryo.register(netImage.class, new cryptoSerializer(r.getSerializer(), networkKey), r.getId());
+					r = kryo.register(netDirList.class);
+					kryo.register(netDirList.class, new cryptoSerializer(r.getSerializer(), networkKey), r.getId());
+					r = kryo.register(netFileList.class);
+					kryo.register(netFileList.class, new cryptoSerializer(r.getSerializer(), networkKey), r.getId());
+					r = kryo.register(intParameter.class);
+					kryo.register(intParameter.class, new cryptoSerializer(r.getSerializer(), networkKey), r.getId());
 
 					server.addListener(new Listener() {
 						public void connected (Connection connection) {
@@ -516,14 +516,14 @@ public class WebcamServer {
 						public void received (Connection connection, Object object) {
 							try {
 								if(object == null) return;
-								else if(object instanceof NetImage) {
+								else if(object instanceof netImage) {
 									boolean authorized = false;
 									long number = 0;
 									if(historyIntFlags.containsKey(connection.getID())) {
 										number = historyIntFlags.get(connection.getID());
-										if(((NetImage) object).getNumber() == number) authorized = true;
-										if(((NetImage) object).getDir().contains("/") || ((NetImage) object).getDir().contains("\\")) authorized = false;
-										if(((NetImage) object).getFile().contains("/") || ((NetImage) object).getFile().contains("\\")) authorized = false;
+										if(((netImage) object).getNumber() == number) authorized = true;
+										if(((netImage) object).getDir().contains("/") || ((netImage) object).getDir().contains("\\")) authorized = false;
+										if(((netImage) object).getFile().contains("/") || ((netImage) object).getFile().contains("\\")) authorized = false;
 									}
 
 									if(authorized) {
@@ -533,15 +533,15 @@ public class WebcamServer {
 										executor.submit(new Runnable() {
 											public void run() {
 												try {
-													File folder = new File(snapshotFolder, ((NetImage) object).getDir());
-													File file = new File(folder, ((NetImage) object).getFile());
+													File folder = new File(snapshotFolder, ((netImage) object).getDir());
+													File file = new File(folder, ((netImage) object).getFile());
 													byte[] img = Files.readAllBytes(file.toPath());
-													NetImage ni = new NetImage(img, ((NetImage) object).getDir(), ((NetImage) object).getFile());
+													netImage ni = new netImage(img, ((netImage) object).getDir(), ((netImage) object).getFile());
 													sendNetList.add(new ObjectID(connection.getID(), ni));
 												} catch (Exception e) {
 													logger.logException(e);
 												}
-												sendNetList.add(new ObjectID(connection.getID(), new BooleanWrapper(false)));
+												sendNetList.add(new ObjectID(connection.getID(), new booleanWrapper(false)));
 											}
 										});
 									}
@@ -550,13 +550,13 @@ public class WebcamServer {
 										connection.close();
 									}
 								}
-								else if(object instanceof NetFileList) {
+								else if(object instanceof netFileList) {
 									boolean authorized = false;
 									long number = 0;
 									if(historyIntFlags.containsKey(connection.getID())) {
 										number = historyIntFlags.get(connection.getID());
-										if(((NetFileList) object).getNumber() == number) authorized = true;
-										if(((NetFileList) object).getDir().contains("/") || ((NetFileList) object).getDir().contains("\\")) authorized = false;
+										if(((netFileList) object).getNumber() == number) authorized = true;
+										if(((netFileList) object).getDir().contains("/") || ((netFileList) object).getDir().contains("\\")) authorized = false;
 									}
 
 									if(authorized) {
@@ -564,7 +564,7 @@ public class WebcamServer {
 										executor.submit(new Runnable() {
 											public void run() {
 												try {
-													File dir = new File(snapshotFolder, ((NetFileList) object).getDir());
+													File dir = new File(snapshotFolder, ((netFileList) object).getDir());
 													File[] files = dir.listFiles();
 													Arrays.sort(files);
 
@@ -579,14 +579,14 @@ public class WebcamServer {
 															}
 															i++;
 														}
-														NetFileList nfl = new NetFileList();
+														netFileList nfl = new netFileList();
 														nfl.setFiles(chunk, j);
 														sendNetList.add(new ObjectID(connection.getID(), nfl));
 													}
 												} catch (Exception e) {
 													logger.logException(e);
 												}
-												sendNetList.add(new ObjectID(connection.getID(), new BooleanWrapper(false)));
+												sendNetList.add(new ObjectID(connection.getID(), new booleanWrapper(false)));
 											}
 										});
 									}
@@ -595,12 +595,12 @@ public class WebcamServer {
 										connection.close();
 									}
 								}
-								else if(object instanceof NetDirList) {
+								else if(object instanceof netDirList) {
 									boolean authorized = false;
 									long number = 0;
 									if(historyIntFlags.containsKey(connection.getID())) {
 										number = historyIntFlags.get(connection.getID());
-										if(((NetDirList) object).getNumber() == number) authorized = true;
+										if(((netDirList) object).getNumber() == number) authorized = true;
 									}
 
 									if(authorized) {
@@ -622,14 +622,14 @@ public class WebcamServer {
 															}
 															i++;
 														}
-														NetDirList ndl = new NetDirList();
+														netDirList ndl = new netDirList();
 														ndl.setDirs(chunk, j);
 														sendNetList.add(new ObjectID(connection.getID(), ndl));
 													}
 												} catch (Exception e) {
 													logger.logException(e);
 												}
-												sendNetList.add(new ObjectID(connection.getID(), new BooleanWrapper(false)));
+												sendNetList.add(new ObjectID(connection.getID(), new booleanWrapper(false)));
 											}
 										});
 									}
@@ -638,8 +638,8 @@ public class WebcamServer {
 										connection.close();
 									}
 								}
-								else if(object instanceof IntParameter) {
-									String key = ((IntParameter) object).getKey();
+								else if(object instanceof intParameter) {
+									String key = ((intParameter) object).getKey();
 									if(key == null) key = "";
 
 									switch(key) {
@@ -648,7 +648,7 @@ public class WebcamServer {
 										long start = new Random().nextLong();
 										historyIntFlags.put(connection.getID(), start + 1L);
 										historyIdleFlags.put(connection.getID(), true);
-										connection.sendTCP(new IntParameter("start", start));
+										connection.sendTCP(new intParameter("start", start));
 										break;
 									default:
 										break;
@@ -879,11 +879,11 @@ public class WebcamServer {
 							byte[] byteImage = new byte[turboJpegCompressor.getCompressedSize()];
 							System.arraycopy(jpegBuf, 0, byteImage, 0, byteImage.length);
 
-							lastWebcamImage = new NetImage(byteImage, getFolderName(nowDateTime), getFileName(nowDateTime), ++frameCounter);
+							lastWebcamImage = new netImage(byteImage, getFolderName(nowDateTime), getFileName(nowDateTime), ++frameCounter);
 						} catch (Exception e) {
 							logger.logException(e);
 
-							lastWebcamImage = new NetImage();
+							lastWebcamImage = new netImage();
 						}
 
 						long interval = 750 / maxFps; // A little faster than fps

@@ -2,23 +2,23 @@ package sharedObjects;
 
 import javax.crypto.spec.SecretKeySpec;
 
-public class NetworkKey {
+public class networkKey {
 	public volatile SecretKeySpec key;
 	public volatile String algorithm, transformation;
 	public volatile boolean hasIv = false;
 	public volatile byte[] iv = null;
 	
-	public NetworkKey() {
+	public networkKey() {
 		
 	}
 	
-	public NetworkKey(String algorithm, String transformation, boolean hasIv) {
+	public networkKey(String algorithm, String transformation, boolean hasIv) {
 		this.algorithm = algorithm;
 		this.transformation = transformation;
 		this.hasIv = hasIv;
 	}
 	
-	public NetworkKey(String algorithm, String transformation, SecretKeySpec key, byte[] iv) {
+	public networkKey(String algorithm, String transformation, SecretKeySpec key, byte[] iv) {
 		this.algorithm = algorithm;
 		this.transformation = transformation;
 		this.key = key;

@@ -1,13 +1,13 @@
 package sharedObjects;
 
-public class BooleanWrapper {
+public class booleanWrapper {
 	private volatile boolean b = false;
 
-	public BooleanWrapper() {
+	public booleanWrapper() {
 		
 	}
 	
-	public BooleanWrapper(boolean b) {
+	public booleanWrapper(boolean b) {
 		this.b = b;
 	}
 	
